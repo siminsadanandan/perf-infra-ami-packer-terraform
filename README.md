@@ -33,3 +33,4 @@ To add new region you are required to create a new folder e.g. us-west-1 and und
 To deploy the infra, you can run the deploy.sh script found under the *terraform* folder. If you have added new region then the script needs to be updated to deploy that region as well. 
 
 
+__To pass the AWS credential you can export AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY as env variable__
