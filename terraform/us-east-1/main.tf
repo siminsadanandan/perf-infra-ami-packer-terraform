@@ -55,8 +55,8 @@ module "network" {
   environment                      = var.environment
   vpc_id                           = module.vpc.vpc_id
   route_table_id                   = module.vpc.main_route_table_id
-  perf-loadgen_subnet_cidr         = var.perf_loadgen_subnet_cidr
-  perf-loadgen_private_subnet_cidr = var.perf_loadgen_private_subnet_cidr
+  perf_loadgen_subnet_cidr         = var.perf_loadgen_subnet_cidr
+  perf_loadgen_private_subnet_cidr = var.perf_loadgen_private_subnet_cidr
   gateway_id                       = module.igw.gateway_id
   nat_gateway_id                   = module.natgw.nat_gateway_id
 }
