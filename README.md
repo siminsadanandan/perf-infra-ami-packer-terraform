@@ -30,6 +30,8 @@ Verify these parameters are updated correctly before you run the script...
 
 To add new region you are required to create a new folder e.g. us-west-1 and under that folder copy main.tf and variable.tf from existing us-east-1 folder. Most of the time you are required to change only the aws_region parameter in the variable.tf file to ready the deployment. 
 
+If you want to deploy multiple EC2 instances per region then change the *instance_count* value in the *variable.tf* file.
+
 To deploy the infra, you can run the deploy.sh script found under the *terraform* folder. If you have added new region then the script needs to be updated to deploy that region as well. 
 
 
