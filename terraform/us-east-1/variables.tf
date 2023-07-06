@@ -28,6 +28,11 @@ variable "instance_type" {
   default     = "t2.nano"
 }
 
+variable "instance_count" {
+  description = "No of instances to provision"
+  default     = "1"
+}
+
 variable "aws_key_name" {
   default = "perfuser"
 }

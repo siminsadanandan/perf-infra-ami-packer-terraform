@@ -29,3 +29,7 @@ variable "vpc_id" {
 variable "subnet_id" {
   description = "Subnet Id from your network object/module"
 }
+
+variable "instance_count" {
+  description = "No of instances to provision"
+}

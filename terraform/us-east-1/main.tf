@@ -48,6 +48,12 @@ output "ssh_public_key_pem" {
 ############
 */
 
+module "vpc" {
+  source      = "../module/services/vpc"
+  owner       = var.owner
+  environment = var.environment
+  vpc_cidr    = var.vpc_cidr
+}
 
 module "network" {
   source                           = "../module/services/network"
@@ -59,13 +65,6 @@ module "network" {
   perf_loadgen_private_subnet_cidr = var.perf_loadgen_private_subnet_cidr
   gateway_id                       = module.igw.gateway_id
   nat_gateway_id                   = module.natgw.nat_gateway_id
-}
-
-module "vpc" {
-  source      = "../module/services/vpc"
-  owner       = var.owner
-  environment = var.environment
-  vpc_cidr    = var.vpc_cidr
 }
 
 module "elasticip" {
@@ -91,13 +90,14 @@ module "igw" {
 }
 
 module "server" {
-  source        = "../module/services/server"
-  owner         = var.owner
-  ami_owner     = var.ami_owner
-  environment   = var.environment
-  instance_type = var.instance_type
-  aws_amis_base = var.aws_amis_base
-  key_name      = aws_key_pair.auth.id
-  vpc_id        = module.vpc.vpc_id
-  subnet_id     = module.network.private_subnet_id
+  source         = "../module/services/server"
+  owner          = var.owner
+  ami_owner      = var.ami_owner
+  environment    = var.environment
+  instance_type  = var.instance_type
+  instance_count = var.instance_count
+  aws_amis_base  = var.aws_amis_base
+  key_name       = aws_key_pair.auth.id
+  vpc_id         = module.vpc.vpc_id
+  subnet_id      = module.network.private_subnet_id
 }

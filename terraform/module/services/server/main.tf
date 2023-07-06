@@ -35,7 +35,7 @@ resource "aws_instance" "perf-loadgen" {
   availability_zone = data.aws_availability_zones.available.names[0]
 
   # No. of instances to spin off
-  count = "1"
+  count = var.instance_count
 
   key_name                    = var.key_name
   vpc_security_group_ids      = [aws_security_group.perf-loadgen.id]
@@ -76,7 +76,7 @@ resource "aws_instance" "perf-loadgen" {
     Owner       = var.owner
     Terraform   = true
     Environment = var.environment
-    Name        = "perf-loadgen-instance"
+    Name        = "perf-loadgen-instance-${count.index}"
   }
 }
 
