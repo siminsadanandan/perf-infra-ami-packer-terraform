@@ -1,55 +1,42 @@
-resource "aws_security_group" "perf-loadgen" {
-  name        = "security-group-perf-loadgen"
-  description = "Security group for perf-loadgen"
-
-  vpc_id = var.vpc_id
-
-  # Allow Inbound connectivity from any IP for SSH/22 port
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # Allow all Outbound connectivity
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Owner       = var.owner
-    Terraform   = true
-    Environment = var.environment
-    Name        = "perf-loadgen-security-group"
-  }
-}
-
-# perf-loadgen instance
+############
+# MODULE: server provisioning
+# module input params defined in module specific variable.tf file 
+# output value are defined in output.tf file 
 resource "aws_instance" "perf-loadgen" {
-  ami               = data.aws_ami.perf-loadgen.id
-  instance_type     = var.instance_type
-  availability_zone = data.aws_availability_zones.available.names[0]
+  ami           = data.aws_ami.perf-loadgen.id
+  instance_type = var.instance_type
+
+  # if you want to always deploy in the 1st AZ uncomment this option 
+  # availability_zone = data.aws_availability_zones.available.names[0]
 
   # No. of instances to spin off
   count = var.instance_count
 
   key_name                    = var.key_name
-  vpc_security_group_ids      = [aws_security_group.perf-loadgen.id]
+  vpc_security_group_ids      = [var.vpc_security_group_ids]
   subnet_id                   = var.subnet_id
-  associate_public_ip_address = false
+  associate_public_ip_address = var.associate_public_ip_address
 
+  # Uncomment below line for spot instance option
   /*
+  instance_market_options {
+    spot_options {
+      max_price = 0.0031
+    }
+  }
+*/
+
   # root disk
   root_block_device {
-    volume_size           = "20"
-    volume_type           = "gp2"
+    volume_size           = var.root_vol_size_in_gb
+    volume_type           = var.root_vol_type
     encrypted             = false
     delete_on_termination = true
   }
+
+  # uncomment below block if you want to attach separate volume in addition
+  # to the above root volume
+  /*
   # data disk
   ebs_block_device {
     device_name           = "/dev/xvda"
@@ -57,20 +44,44 @@ resource "aws_instance" "perf-loadgen" {
     volume_type           = "gp2"
     delete_on_termination = true
   }
-
 */
 
+  # execute server init script/pre_test_setup shell script 
+  user_data = templatefile("${path.module}/pre_test_setup.tftpl", { OPT = var.loadgen_type, NEWRELIC_ACCOUNT_ID = var.newrelic_account_id, NEWRELIC_KEY = var.newrelic_api_key, HOSTNAME = "${var.hostname_prefix}-${count.index}" })
 
-  # Script execution on deployment
-  user_data = <<-EOL
-   sudo gpg -k
-   sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
-   echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
-   sudo apt-get update
-   sudo apt-get install k6
-   git clone https://github.com/grafana/k6-example-woocommerce.git
-  EOL
+  /*
+  provisioner "file" {
+    source      = "${path.module}/pre_test_setup.sh"
+    destination = "/tmp/pre_test_setup.sh"
+    connection {
+      type     = "ssh"
+      user     = "ubuntu"
+      host     = self.private_ip
+      private_key = file(var.private_key_path)
+      bastion_host = self.public_ip
+      bastion_user = "ubuntu"
+      bastion_host_key = file(var.public_key_path)
+      bastion_private_key = file(var.private_key_path)
+    }
+  }
 
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/pre_test_setup.sh",
+      "/tmp/pre_test_setup.sh ${var.loadgen_type} ${var.newrelic_account_id} ${var.newrelic_api_key}"
+    ]
+       connection {
+      type     = "ssh"
+      user     = "ubuntu"
+      host     = self.public_ip
+      private_key = file(var.private_key_path)
+      bastion_host = self.public_ip
+      bastion_user = "ubuntu"
+      bastion_host_key = file(var.public_key_path)
+      bastion_private_key = file(var.private_key_path)
+    }
+  }
+*/
 
   tags = {
     Owner       = var.owner

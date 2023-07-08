@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# This script will execute the steps below only on load generator m/c,
+# will skip this on bastion host VM.
+# Download and run the newrelic agent docker container for forwarding K6.io metrics 
+# to newrelic 
+# Download and setup K6.io load generator, clone sample K6 project from git
+# and trigger a dry run
+
+OPTION=${OPT}
+
+# set hostname for all servers
+sudo hostnamectl set-hostname ${HOSTNAME}
+
+if [[ "$OPTION" == "K6" ]] ;then
+    sudo wget https://github.com/grafana/k6/releases/download/v0.45.0/k6-v0.45.0-linux-amd64.tar.gz
+    sudo tar -zxvf k6-v0.45.0-linux-amd64.tar.gz
+    sudo rm -rf k6-v0.45.0-linux-amd64.tar.gz
+    sudo mv /k6-v0.45.0-linux-amd64/k6 /usr/bin
+    sudo rm -rf /k6-v0.45.0-linux-amd64
+    docker run --rm -d --name newrelic-statsd -h $(hostname) -e NR_ACCOUNT_ID=${NEWRELIC_ACCOUNT_ID} -e NR_API_KEY=${NEWRELIC_KEY} -e TAGS="environment:production region:$(curl -s http://169.254.169.254/latest/meta-data/placement/region)" -p 8125:8125/udp newrelic/nri-statsd:latest
+    sudo git clone https://github.com/grafana/k6-example-woocommerce.git
+    sudo mv /k6-example-woocommerce /tmp/scripts
+    sudo chmod -R +x /tmp/scripts
+    sudo sleep 120 && cd /tmp/scripts && K6_STATSD_ENABLE_TAGS=true k6 run --vus 2 --duration 120s --out statsd --out csv=/tmp/scripts/test_results.csv main.js
+    #sudo sleep 120 && cd /tmp/scripts && K6_STATSD_ENABLE_TAGS=true K6_BROWSER_ENABLED=true k6 run --out statsd browser.js
+fi

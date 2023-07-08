@@ -126,6 +126,7 @@ module "server" {
 }
 ############
 
+/*
 ############
 # create ec2 load generator VMs with public IP for bastion host
 module "bastion" {
@@ -150,3 +151,4 @@ module "bastion" {
 
 }
 ############
+*/

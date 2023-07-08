@@ -1,11 +1,15 @@
+############
+# MODULE: All Network components (subnet/route table/route etc.) provisioning
+# module input params defined in module specific variable.tf file 
+# output value are defined in output.tf file 
 data "aws_availability_zones" "available" {}
 
 # create a public subnet to attach public facing resources like NAT Gateway
 # webserver, bastion host etc
 resource "aws_subnet" "perf-loadgen-public-sn" {
-  vpc_id            = var.vpc_id
-  cidr_block        = var.perf_loadgen_subnet_cidr
-  availability_zone = data.aws_availability_zones.available.names[0]
+  vpc_id     = var.vpc_id
+  cidr_block = var.perf_loadgen_subnet_cidr
+  #availability_zone = data.aws_availability_zones.available.names[0]
 
   map_public_ip_on_launch = true
 
@@ -19,9 +23,9 @@ resource "aws_subnet" "perf-loadgen-public-sn" {
 
 # create a private subnet to attach to all the backend resources
 resource "aws_subnet" "perf-loadgen-private-sn" {
-  vpc_id            = var.vpc_id
-  cidr_block        = var.perf_loadgen_private_subnet_cidr
-  availability_zone = data.aws_availability_zones.available.names[0]
+  vpc_id     = var.vpc_id
+  cidr_block = var.perf_loadgen_private_subnet_cidr
+  #availability_zone = data.aws_availability_zones.available.names[0]
 
   tags = {
     Owner       = var.owner
