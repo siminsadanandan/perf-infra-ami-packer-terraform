@@ -1,6 +1,11 @@
 # Distributed load generation AWS infra setup automation
 
+![Flow diagram](https://github.com/siminsadanandan/perf-infra-ami-packer-terraform/blob/acbccea737de7701311d025ea8c4ecaf2a15d0ba/tf_multi_geo_load_gen_deploy_dig_1.png "Flow diag")
+
+
+
 This infrastructure code helps to quickly setup required load generation infra in AWS cloud. Deployment script gives you option to create on-demand infra in multiple AWS AZ/region and once the test is complete it can be teared down completely. With this you can quickly setup a multi-geo distributed test using load generation tool of your choice like K6.io/Jmeter/Locust etc. As part of this setup you will deploy 1 EC2 instance per AZ/region and by default the instance is provisioned in an private subnet. Outbound/internet access for these VMs are managed through NAT Gateway deployed in the public subnet. An elastic public IP is created and associated to the NAT Gateway. User also have option to create 7 more public IPs and associate to the NAT Gateway if you need to generate load from multiple IP addresses. 
+
 
 `If you want to ssh to your load generator m/c you have to provision a jumphost/bastion host in the public subnet sharing the same VPC and then ssh ProxyJump to your load generator VM through the jumphost/bastion host.`
 
