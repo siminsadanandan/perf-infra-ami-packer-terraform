@@ -1,17 +1,15 @@
 # Distributed load generation AWS infra setup automation
 
-This infrastructure code helps to quickly setup required load generation infra in AWS cloud. Deployment script gives you option to create on-demand infra in multiple AWS AZ/region and once the test is complete it can be teared down completely. With this you can quickly setup a multi-geo distributed test using load generation tool of your choice. As part of this setup you will deploy 1 EC2 instance per AZ/region and by default the instance is provisioned in an private subnet. Outbound/internet access for these VMs are managed through NAT Gateway deployed in the public subnet. An elastic public IP is created and associated to the NAT Gateway. User also have option to create 7 more public IPs and associate to the NAT Gateway if you need to generate load from multiple IP addresses. 
+This infrastructure code helps to quickly setup required load generation infra in AWS cloud. Deployment script gives you option to create on-demand infra in multiple AWS AZ/region and once the test is complete it can be teared down completely. With this you can quickly setup a multi-geo distributed test using load generation tool of your choice like K6.io/Jmeter/Locust etc. As part of this setup you will deploy 1 EC2 instance per AZ/region and by default the instance is provisioned in an private subnet. Outbound/internet access for these VMs are managed through NAT Gateway deployed in the public subnet. An elastic public IP is created and associated to the NAT Gateway. User also have option to create 7 more public IPs and associate to the NAT Gateway if you need to generate load from multiple IP addresses. 
 
 `If you want to ssh to your load generator m/c you have to provision a jumphost/bastion host in the public subnet sharing the same VPC and then ssh ProxyJump to your load generator VM through the jumphost/bastion host.`
 
 ```bash
-ssh -o StrictHostKeyChecking=accept-new -J ubuntu@<jumphost IP> ubuntu@<load generator VM IP>
+ssh -o StrictHostKeyChecking=accept-new -J ubuntu@<jumphost/bastion IP> ubuntu@<load generator VM IP>
 
 ```
 
 The deployment script are organized into 2 main folder, all the AMI creation/deployment done using ***packer.io*** scripts are under *packer* folder and the AWS infrastructure provisioning done using **terraform.io** are under *terraform* folder. Inside terraform folder configurations for each AZ/region are again separated into multiple subfolder with AZ name as folder name. 
-
-*Note the current deployment don't have option to store any logs to a persistent store like s3/nfs etc.* 
 
 
 > Build timing for packer image creation and making in available in the 2 AZ is around 8 min. 
@@ -31,9 +29,9 @@ Once the image is created it will be available only in the region you have build
 For the ease of maintaining multi-region deployment script. we have separate *main .tf* script and associated *variable.tf* file for each region organized in respective folder. All the common script for object creations are separated out into common *module* folder. Before you run the script you are required to update the *variable.tf* file from the respective region folder. 
 
 Verify these parameters are updated correctly before you run the script...
-- aws_region (update the correct aws region code)
-- ami_owner (you can get the AMI owner details from the AMI info page)
-- instance_type (AWS EC2 instance type name)
+- aws_region (update the correct aws region code e.g us-east-1)
+- ami_owner (you account id without any dash e.g 415332747309)
+- instance_type (AWS EC2 instance type name e.g t2.nano)
 - public_key_path (ssh key's public part, provide name with full path, you require the private part of this key to connect to your EC2 instance)
 
 > AWS user used to deploy terraform code should have correct permissions to create/delete/update EC2, IAM, S3 resources
@@ -54,3 +52,7 @@ To deploy the infra, you can run the *deploy.sh* script found under the *terrafo
 - To add new region you are required to create a new folder e.g. *us-west-1* and under that folder copy *main.tf* and *variable.tf* from existing *us-east-1* folder. Most of the time you are required to change only the *aws_region* parameter in the *variable.tf* file to ready the deployment. 
 
 - If you want to deploy multiple EC2 instances per region then change the *instance_count* value in the *variable.tf* file.
+
+- To switch to different load generator you can modify the cloud-init script template *pre_test_setup.tftpl* to install and start the test run.
+
+- You can push the test execution metrics to different monitoring tool supported by the load generator tool e.g Datadog/Dynatrace etc, all there related customization can be done in script template *pre_test_setup.tftpl*. You are also required to make the necessary change in the *variable.tf* file to update the required authentication details like auth user/key. 
