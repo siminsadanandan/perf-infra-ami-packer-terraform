@@ -16,7 +16,7 @@ resource "aws_instance" "perf-loadgen" {
   vpc_security_group_ids      = [var.vpc_security_group_ids]
   subnet_id                   = var.subnet_id
   associate_public_ip_address = var.associate_public_ip_address
-
+  iam_instance_profile        = var.iam_instance_profile_id
   # Uncomment below line for spot instance option
   /*
   instance_market_options {

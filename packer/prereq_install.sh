@@ -1,7 +1,8 @@
 #!/bin/sh
 
 # Install Docker CE on Ubuntu Jammy-22.x AMI + performance monitoring
-# tools iftop,
+# tools iftop, nmon, net-tools, java8 +
+# zip/unzip and AWS CLIv2
 
 # set -e
 
@@ -32,10 +33,14 @@ sudo usermod -aG docker ubuntu
 
 sudo systemctl enable docker
 
-docker --version
-
 # Install monitoring tools
-# sudo apt-get -y install iftop
-# sudo apt-get -y install nmon
-# sudo apt-get -y install net-tools
-# sudo apt-get -y install openjdk-8-jre-headless
+sudo apt-get -y install iftop
+sudo apt-get -y install nmon
+sudo apt-get -y install net-tools
+sudo apt-get -y install openjdk-8-jre-headless
+sudo apt-get -y install zip unzip
+
+# Install AWS CLI
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install

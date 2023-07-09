@@ -84,3 +84,8 @@ variable "loadgen_type" {
   description = "Load generator type k6/jmeter etc"
   default     = "K6"
 }
+
+variable "loadgen_s3_bucket_name" {
+  description = "S3 bucket name to create"
+  default     = "perf-loadgen-store"
+}

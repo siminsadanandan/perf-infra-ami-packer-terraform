@@ -97,6 +97,26 @@ module "sg" {
   environment = var.environment
   vpc_id      = module.vpc.vpc_id
 }
+
+module "iam" {
+  source      = "../module/services/iam"
+  owner       = var.owner
+  environment = var.environment
+}
+
+############
+
+
+
+############
+# create S3 bucket for storing load generator related files
+# which can be accessed from all the ec2 instances
+module "s3" {
+  source      = "../module/services/s3"
+  owner       = var.owner
+  environment = var.environment
+  s3_bucker_name = var.loadgen_s3_bucket_name
+}
 ############
 
 
@@ -123,6 +143,7 @@ module "server" {
   root_vol_type               = var.root_vol_type
   loadgen_type                = var.loadgen_type
   hostname_prefix = "loadgen-${var.environment}-${var.aws_region}"
+  iam_instance_profile_id = module.iam.instance_profile_id
 }
 ############
 
@@ -147,6 +168,6 @@ module "bastion" {
   root_vol_type               = var.root_vol_type
   loadgen_type                = "NONE"
   hostname_prefix = "bastion-${var.environment}-${var.aws_region}"
-
+  iam_instance_profile_id = module.iam.instance_profile_id
 }
 ############

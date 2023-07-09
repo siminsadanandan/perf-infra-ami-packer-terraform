@@ -14,13 +14,16 @@ The deployment script are organized into 2 main folder, all the AMI creation/dep
 *Note the current deployment don't have option to store any logs to a persistent store like s3/nfs etc.* 
 
 
+> Build timing for packer image creation and making in available in the 2 AZ is around 8 min. 
+
+
 ### Packer scripts for AMI creation
 
 Run the AMI *build.sh* script from packer folder which refer the main build file *perf_ubuntu_docker_ami.pkr.hcl*. This will build an Ubuntu 22 based image along with some system monitoring tools like htop, nmon, net-tools etc. The image also have docker CE and other pre requisite installed through the script *prereq_install.sh*. As part of this image building we also apply required OS level tunings for load generator using script *perf_tunings.sh*.
 
 Once the image is created it will be available only in the region you have build it. If you want to make the image available in other regions then you want to add the required region in the list item under variable *_ami_regions_* in the main build script *perf_ubuntu_docker_ami.pkr.hcl*.
 
-*Note AWS AMI image will incur some storage cost
+> AWS AMI image will incur some storage cost
 
 
 ### Terraform AWS infrastructure creation code
@@ -33,6 +36,7 @@ Verify these parameters are updated correctly before you run the script...
 - instance_type (AWS EC2 instance type name)
 - public_key_path (ssh key's public part, provide name with full path, you require the private part of this key to connect to your EC2 instance)
 
+> AWS user used to deploy terraform code should have correct permissions to create/delete/update EC2, IAM, S3 resources
 
 All the post VM provisioning tasks are defined in template *pre_test_setup.tftpl*, the bash script defined get executed as part of the VM provisioning cloud_init step. Template script have conditional block to execute separate steps in bastion and load generator hosts. The sample template provided install newrelic K6.io integration agent, download and setup K6.io load generator and start a dry load test with the downloaded sample K6.io script.
 

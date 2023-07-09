@@ -66,3 +66,7 @@ variable "hostname_prefix" {
   description = "Server hostname prefix"
 }
 
+variable "iam_instance_profile_id" {
+  description = "IAM Instance profile Id"
+}
+

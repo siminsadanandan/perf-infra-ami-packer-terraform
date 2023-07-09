@@ -6,6 +6,7 @@
 # to newrelic 
 # Download and setup K6.io load generator, clone sample K6 project from git
 # and trigger a dry run
+# On test completion copy the results*.csv to s3 storage bucket s3://perf-loadgen-store
 
 OPTION=${OPT}
 
@@ -22,6 +23,8 @@ if [[ "$OPTION" == "K6" ]] ;then
     sudo git clone https://github.com/grafana/k6-example-woocommerce.git
     sudo mv /k6-example-woocommerce /tmp/scripts
     sudo chmod -R +x /tmp/scripts
-    sudo sleep 120 && cd /tmp/scripts && K6_STATSD_ENABLE_TAGS=true k6 run --vus 2 --duration 120s --out statsd --out csv=/tmp/scripts/test_results.csv main.js
+    sudo sleep 120 && cd /tmp/scripts && K6_STATSD_ENABLE_TAGS=true k6 run --vus 2 --duration 120s --out statsd --out csv=/tmp/scripts/$(hostname)_$(date +"%Y_%m_%d_%I_%M_%p")_test_results.csv main.js
+    # after the test is complete copy logs to s3 bucket s3://perf-loadgen-store
+    sudo aws s3 cp /tmp/scripts/ s3://perf-loadgen-store --recursive --exclude "*" --include "*.csv"
     #sudo sleep 120 && cd /tmp/scripts && K6_STATSD_ENABLE_TAGS=true K6_BROWSER_ENABLED=true k6 run --out statsd browser.js
 fi
